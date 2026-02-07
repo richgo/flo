@@ -79,3 +79,18 @@
 {"timestamp":"2026-02-07T12:49:09.890847973Z","level":"INFO","operation":"workspace.save","message":"Workspace saved","details":{"task_count":13}}
 {"timestamp":"2026-02-07T12:49:09.890867806Z","level":"INFO","operation":"workspace.task_status","message":"Task status changed","details":{"new_status":"complete","old_status":"in_progress","task_id":"t-013"}}
 {"timestamp":"2026-02-07T12:49:09.893339623Z","level":"INFO","operation":"workspace.load","message":"Workspace loaded","details":{"backend":"copilot","feature":"flo-v1","task_count":13}}
+{"timestamp":"2026-02-07T12:49:22.912705036Z","level":"INFO","operation":"workspace.load","message":"Workspace loaded","details":{"backend":"copilot","feature":"flo-v1","task_count":13}}
+{"timestamp":"2026-02-07T12:49:22.912805313Z","level":"INFO","operation":"task.set_status","message":"Task status changed","details":{"from":"pending","task_id":"t-005","task_title":"Spec Validation - schema/linter for SPEC.md before task decomposition","to":"in_progress"}}
+{"timestamp":"2026-02-07T12:49:22.912818424Z","level":"INFO","operation":"task.registry.update","message":"Task updated","details":{"task_id":"t-005","title":"Spec Validation - schema/linter for SPEC.md before task decomposition"}}
+{"timestamp":"2026-02-07T12:49:22.919735008Z","level":"INFO","operation":"workspace.save","message":"Workspace saved","details":{"task_count":13}}
+{"timestamp":"2026-02-07T12:49:22.919772526Z","level":"INFO","operation":"workspace.task_status","message":"Task status changed","details":{"new_status":"in_progress","old_status":"pending","task_id":"t-005"}}
+{"timestamp":"2026-02-07T12:49:22.923326188Z","level":"INFO","operation":"workspace.load","message":"Workspace loaded","details":{"backend":"copilot","feature":"flo-v1","task_count":13}}
+{"timestamp":"2026-02-07T12:49:22.923441058Z","level":"INFO","operation":"task.set_status","message":"Task status changed","details":{"from":"pending","task_id":"t-006","task_title":"Error Handling \u0026 Retry - circuit breaker, retry logic, fallback for agent backends","to":"in_progress"}}
+{"timestamp":"2026-02-07T12:49:22.923455409Z","level":"INFO","operation":"task.registry.update","message":"Task updated","details":{"task_id":"t-006","title":"Error Handling \u0026 Retry - circuit breaker, retry logic, fallback for agent backends"}}
+{"timestamp":"2026-02-07T12:49:22.927001942Z","level":"INFO","operation":"workspace.save","message":"Workspace saved","details":{"task_count":13}}
+{"timestamp":"2026-02-07T12:49:22.927028923Z","level":"INFO","operation":"workspace.task_status","message":"Task status changed","details":{"new_status":"in_progress","old_status":"pending","task_id":"t-006"}}
+{"timestamp":"2026-02-07T12:49:22.930048773Z","level":"INFO","operation":"workspace.load","message":"Workspace loaded","details":{"backend":"copilot","feature":"flo-v1","task_count":13}}
+{"timestamp":"2026-02-07T12:49:22.930146254Z","level":"INFO","operation":"task.set_status","message":"Task status changed","details":{"from":"pending","task_id":"t-007","task_title":"Secret Management - .env handling, credential docs, secure token storage","to":"in_progress"}}
+{"timestamp":"2026-02-07T12:49:22.930157699Z","level":"INFO","operation":"task.registry.update","message":"Task updated","details":{"task_id":"t-007","title":"Secret Management - .env handling, credential docs, secure token storage"}}
+{"timestamp":"2026-02-07T12:49:22.937179726Z","level":"INFO","operation":"workspace.save","message":"Workspace saved","details":{"task_count":13}}
+{"timestamp":"2026-02-07T12:49:22.937197652Z","level":"INFO","operation":"workspace.task_status","message":"Task status changed","details":{"new_status":"in_progress","old_status":"pending","task_id":"t-007"}}

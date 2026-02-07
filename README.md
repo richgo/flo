@@ -3,7 +3,7 @@
 AI-powered spec-driven, test-driven development for enterprise teams.
 
 [![CI](https://github.com/richgo/flo/actions/workflows/ci.yml/badge.svg)](https://github.com/richgo/flo/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-78%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-140%20passing-brightgreen)]()
 [![Go](https://img.shields.io/badge/go-1.24-blue)]()
 
 ## Overview
@@ -51,6 +51,8 @@ vim .flo/SPEC.md
 | `flo task get <id>` | Get task details |
 | `flo status` | Show workspace status |
 | `flo work <task-id>` | Run agent on task |
+| `flo spec validate [path]` | Validate SPEC.md format |
+| `flo config show` | Show configuration and secrets (masked) |
 | `eas mcp serve` | Start MCP server |
 
 ## Architecture
@@ -85,6 +87,31 @@ EAS exposes these tools to agents:
 | `eas_spec_read` | Read SPEC.md |
 
 ## Development
+
+### Environment Variables
+
+Flo supports the following environment variables for configuration:
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `CLAUDE_API_KEY` | API key for Claude backend | Yes (if using Claude) |
+| `COPILOT_TOKEN` | GitHub Copilot token | Yes (if using Copilot) |
+| `FLO_BACKEND` | Default backend (claude/copilot) | No (defaults to claude) |
+| `FLO_MODEL` | Default model to use | No |
+
+You can set these variables in:
+- System environment variables
+- `.env` file in project root
+- `.flo/.env` file in the workspace
+
+Example `.env` file:
+```bash
+CLAUDE_API_KEY=sk-ant-api-xxxxx
+COPILOT_TOKEN=ghp_xxxxx
+FLO_BACKEND=claude
+```
+
+View current configuration with: `flo config show`
 
 ### Building from Source
 
