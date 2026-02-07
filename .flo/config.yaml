@@ -4,3 +4,19 @@ backend: copilot
 tdd:
     enforce: true
     test_command: go test ./...
+taskTypes:
+    build:
+        model: claude/sonnet
+    design:
+        model: claude/opus
+        thinking: extended
+    docs:
+        model: claude/haiku
+    fix:
+        model: copilot/gpt-4
+    refactor:
+        model: copilot/gpt-4
+    review:
+        model: claude/sonnet
+    test:
+        model: claude/sonnet

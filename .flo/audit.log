@@ -217,3 +217,24 @@
 {"timestamp":"2026-02-07T17:28:37.604906971Z","level":"INFO","operation":"task.registry.update","message":"Task updated","details":{"task_id":"t-024","title":"Generate task.md files with frontmatter (not just manifest.json)"}}
 {"timestamp":"2026-02-07T17:28:37.605926872Z","level":"INFO","operation":"workspace.save","message":"Workspace saved","details":{"task_count":26}}
 {"timestamp":"2026-02-07T17:28:37.605944354Z","level":"INFO","operation":"workspace.task_status","message":"Task status changed","details":{"new_status":"in_progress","old_status":"pending","task_id":"t-024"}}
+{"timestamp":"2026-02-07T17:33:48.101542967Z","level":"INFO","operation":"workspace.load","message":"Workspace loaded","details":{"backend":"copilot","feature":"flo-v1","task_count":26}}
+{"timestamp":"2026-02-07T17:33:48.101647706Z","level":"INFO","operation":"task.set_status","message":"Task status changed","details":{"from":"in_progress","task_id":"t-014","task_title":"Update task.md frontmatter schema with model/provider/type fields","to":"complete"}}
+{"timestamp":"2026-02-07T17:33:48.101656669Z","level":"INFO","operation":"task.registry.update","message":"Task updated","details":{"task_id":"t-014","title":"Update task.md frontmatter schema with model/provider/type fields"}}
+{"timestamp":"2026-02-07T17:33:48.104718766Z","level":"INFO","operation":"workspace.save","message":"Workspace saved","details":{"task_count":26}}
+{"timestamp":"2026-02-07T17:33:48.10474434Z","level":"INFO","operation":"workspace.task_status","message":"Task status changed","details":{"new_status":"complete","old_status":"in_progress","task_id":"t-014"}}
+{"timestamp":"2026-02-07T17:33:48.107532735Z","level":"INFO","operation":"workspace.load","message":"Workspace loaded","details":{"backend":"copilot","feature":"flo-v1","task_count":26}}
+{"timestamp":"2026-02-07T17:33:48.107610642Z","level":"INFO","operation":"task.set_status","message":"Task status changed","details":{"from":"in_progress","task_id":"t-015","task_title":"Add task types to config: design, build, refactor, test, fix, docs, review","to":"complete"}}
+{"timestamp":"2026-02-07T17:33:48.107619549Z","level":"INFO","operation":"task.registry.update","message":"Task updated","details":{"task_id":"t-015","title":"Add task types to config: design, build, refactor, test, fix, docs, review"}}
+{"timestamp":"2026-02-07T17:33:48.108458614Z","level":"INFO","operation":"workspace.save","message":"Workspace saved","details":{"task_count":26}}
+{"timestamp":"2026-02-07T17:33:48.108469225Z","level":"INFO","operation":"workspace.task_status","message":"Task status changed","details":{"new_status":"complete","old_status":"in_progress","task_id":"t-015"}}
+{"timestamp":"2026-02-07T17:33:48.110785534Z","level":"INFO","operation":"workspace.load","message":"Workspace loaded","details":{"backend":"copilot","feature":"flo-v1","task_count":26}}
+{"timestamp":"2026-02-07T17:33:48.11085494Z","level":"INFO","operation":"task.set_status","message":"Task status changed","details":{"from":"in_progress","task_id":"t-019","task_title":"Backend registry with dynamic provider lookup","to":"complete"}}
+{"timestamp":"2026-02-07T17:33:48.110863181Z","level":"INFO","operation":"task.registry.update","message":"Task updated","details":{"task_id":"t-019","title":"Backend registry with dynamic provider lookup"}}
+{"timestamp":"2026-02-07T17:33:48.111870133Z","level":"INFO","operation":"workspace.save","message":"Workspace saved","details":{"task_count":26}}
+{"timestamp":"2026-02-07T17:33:48.111880837Z","level":"INFO","operation":"workspace.task_status","message":"Task status changed","details":{"new_status":"complete","old_status":"in_progress","task_id":"t-019"}}
+{"timestamp":"2026-02-07T17:33:48.114459179Z","level":"INFO","operation":"workspace.load","message":"Workspace loaded","details":{"backend":"copilot","feature":"flo-v1","task_count":26}}
+{"timestamp":"2026-02-07T17:33:48.114530752Z","level":"INFO","operation":"task.set_status","message":"Task status changed","details":{"from":"in_progress","task_id":"t-024","task_title":"Generate task.md files with frontmatter (not just manifest.json)","to":"complete"}}
+{"timestamp":"2026-02-07T17:33:48.114539697Z","level":"INFO","operation":"task.registry.update","message":"Task updated","details":{"task_id":"t-024","title":"Generate task.md files with frontmatter (not just manifest.json)"}}
+{"timestamp":"2026-02-07T17:33:48.115503594Z","level":"INFO","operation":"workspace.save","message":"Workspace saved","details":{"task_count":26}}
+{"timestamp":"2026-02-07T17:33:48.115513112Z","level":"INFO","operation":"workspace.task_status","message":"Task status changed","details":{"new_status":"complete","old_status":"in_progress","task_id":"t-024"}}
+{"timestamp":"2026-02-07T17:33:48.118068455Z","level":"INFO","operation":"workspace.load","message":"Workspace loaded","details":{"backend":"copilot","feature":"flo-v1","task_count":26}}
