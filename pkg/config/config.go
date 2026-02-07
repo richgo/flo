@@ -150,5 +150,5 @@ func (c *Config) GetBackendConfig() any {
 
 // DefaultConfigPath returns the default config path for a directory.
 func DefaultConfigPath(dir string) string {
-	return filepath.Join(dir, ".eas", "config.yaml")
+	return filepath.Join(dir, ".flo", "config.yaml")
 }

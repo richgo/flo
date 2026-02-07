@@ -1,0 +1,6 @@
+feature: flo-v1
+version: 1
+backend: copilot
+tdd:
+    enforce: true
+    test_command: go test ./...

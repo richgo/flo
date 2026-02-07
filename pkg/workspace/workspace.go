@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	easDir      = ".eas"
+	easDir      = ".flo"
 	configFile  = "config.yaml"
 	specFile    = "SPEC.md"
 	tasksDir    = "tasks"
