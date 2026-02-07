@@ -14,10 +14,10 @@ func TestInit(t *testing.T) {
 		t.Fatalf("Init failed: %v", err)
 	}
 
-	// Check .eas directory created
-	easDir := filepath.Join(tmpDir, ".eas")
+	// Check .flo directory created
+	easDir := filepath.Join(tmpDir, ".flo")
 	if _, err := os.Stat(easDir); os.IsNotExist(err) {
-		t.Error(".eas directory not created")
+		t.Error(".flo directory not created")
 	}
 
 	// Check config.yaml created

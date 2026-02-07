@@ -2,6 +2,7 @@
 
 AI-powered spec-driven, test-driven development for enterprise teams.
 
+[![CI](https://github.com/richgo/flo/actions/workflows/ci.yml/badge.svg)](https://github.com/richgo/flo/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-78%20passing-brightgreen)]()
 [![Go](https://img.shields.io/badge/go-1.24-blue)]()
 
@@ -85,17 +86,32 @@ EAS exposes these tools to agents:
 
 ## Development
 
+### Building from Source
+
 ```bash
-# Run tests
+# Using Make (recommended)
+make build      # Build binary to bin/flo
+make test       # Run tests
+make lint       # Run linter
+make all        # Run lint, test, and build
+make install    # Install to GOPATH/bin
+make clean      # Remove build artifacts
+
+# Or using Go directly
+go build -o bin/flo ./cmd/flo
 go test ./...
+```
 
-# Build
-go build -o eas ./cmd/eas
+### Testing Locally
 
-# Test locally
-./flo init test-feature
-./flo task create "Test task"
-./flo status
+```bash
+# Build and test
+make all
+
+# Test the binary
+./bin/flo init test-feature
+./bin/flo task create "Test task"
+./bin/flo status
 ```
 
 ## Documentation
