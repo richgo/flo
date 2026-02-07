@@ -11,8 +11,9 @@ AI-powered spec-driven, test-driven development for individuals, teams & paralle
 Flo orchestrates AI agents for structured development workflows:
 - **Spec-Driven**: Start with SPEC.md, break into tasks
 - **Test-Driven**: Agents must pass tests before completing tasks
-- **Multi-Backend**: Claude Code or GitHub Copilot SDK
+- **Multi-Backend**: Claude, Copilot, Codex, Gemini - bring your own AI
 - **Git-Native**: All state stored in `.flo/` directory
+- **Task Types**: Different backends for different work (feature, test, docs, refactor)
 
 ## Installation
 
@@ -24,21 +25,27 @@ go install github.com/richgo/flo/cmd/eas@latest
 
 ```bash
 # Initialize a feature workspace
-`flo init user-auth --backend claude
+flo init user-auth --backend claude
 
 # Edit the specification
 vim .flo/SPEC.md
 
 # Create tasks
-`flo task create "Implement OAuth" --repo android
-`flo task create "Add token storage" --repo android --deps t-001
-`flo task create "iOS OAuth" --repo ios
+flo task create "Implement OAuth" --repo android
+flo task create "Add token storage" --repo android --deps t-001
+flo task create "iOS OAuth" --repo ios
 
 # Check status
-`flo status
+flo status
 
 # Start agent work on a task
-`flo work t-001
+flo work t-001
+
+# Work on specific task types
+flo task create "Build auth API" --type feature    # Heavy lifting
+flo task create "Add unit tests" --type test       # Test generation
+flo task create "Update README" --type docs        # Documentation
+flo task create "Extract helpers" --type refactor  # Code cleanup
 ```
 
 ## Commands
@@ -53,7 +60,8 @@ vim .flo/SPEC.md
 | `flo work <task-id>` | Run agent on task |
 | `flo spec validate [path]` | Validate SPEC.md format |
 | `flo config show` | Show configuration and secrets (masked) |
-| `eas mcp serve` | Start MCP server |
+| `flo quota` | Show backend usage and quota status |
+| `flo mcp serve` | Start MCP server |
 
 ## Architecture
 
@@ -66,12 +74,51 @@ vim .flo/SPEC.md
 └── mcp.json          # Auto-generated MCP config
 ```
 
-### Backends
+### Multi-Provider Support (BYO AI)
 
-- **Claude**: Uses Claude Code CLI via MCP
-- **Copilot**: Uses GitHub Copilot SDK (Go)
+Flo supports multiple AI backends with automatic provider switching:
 
-Both backends share the same tool definitions and TDD enforcement.
+**Available Backends:**
+- **Claude**: Claude Code CLI with stream-json output
+- **Copilot**: GitHub Copilot SDK (Go)
+- **Codex**: OpenAI Codex CLI
+- **Gemini**: Google Gemini CLI
+
+**Task Types & Backend Selection:**
+
+Different task types can use different backends based on their strengths:
+
+```yaml
+# Example .flo/config.yaml
+backend: claude  # Default backend
+
+task_types:
+  feature:
+    backend: claude      # Complex features → Claude
+  test:
+    backend: copilot     # Test generation → Copilot
+  docs:
+    backend: gemini      # Documentation → Gemini
+  refactor:
+    backend: codex       # Code refactoring → Codex
+```
+
+**Backend Configuration:**
+
+```bash
+# Initialize with specific backend
+flo init my-feature --backend claude
+
+# Create task with specific type (uses configured backend)
+flo task create "Add auth" --type feature  # Uses claude
+flo task create "Add tests" --type test    # Uses copilot
+flo task create "Update docs" --type docs  # Uses gemini
+
+# Check backend usage and quotas
+flo quota
+```
+
+All backends share the same MCP tool definitions and TDD enforcement.
 
 ## Tools (MCP)
 
@@ -96,7 +143,9 @@ Flo supports the following environment variables for configuration:
 |----------|-------------|----------|
 | `CLAUDE_API_KEY` | API key for Claude backend | Yes (if using Claude) |
 | `COPILOT_TOKEN` | GitHub Copilot token | Yes (if using Copilot) |
-| `FLO_BACKEND` | Default backend (claude/copilot) | No (defaults to claude) |
+| `OPENAI_API_KEY` | API key for Codex backend | Yes (if using Codex) |
+| `GEMINI_API_KEY` | API key for Gemini backend | Yes (if using Gemini) |
+| `FLO_BACKEND` | Default backend (claude/copilot/codex/gemini) | No (defaults to claude) |
 | `FLO_MODEL` | Default model to use | No |
 
 You can set these variables in:
@@ -106,8 +155,13 @@ You can set these variables in:
 
 Example `.env` file:
 ```bash
+# Choose your backend(s)
 CLAUDE_API_KEY=sk-ant-api-xxxxx
 COPILOT_TOKEN=ghp_xxxxx
+OPENAI_API_KEY=sk-xxxxx
+GEMINI_API_KEY=xxxxx
+
+# Set default backend
 FLO_BACKEND=claude
 ```
 
@@ -146,6 +200,7 @@ make all
 - [Architecture](ARCHITECTURE.md)
 - [CLI Approaches](CLI-APPROACHES.md)
 - [Dual Backend Design](DUAL-BACKEND.md)
+- [MCP & Multi-Backend Orchestration](docs/MCP.md)
 - [Copilot SDK Deep Dive](COPILOT-SDK.md)
 - [Research Notes](RESEARCH.md)
 
