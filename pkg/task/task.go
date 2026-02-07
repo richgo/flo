@@ -4,6 +4,8 @@ package task
 import (
 	"fmt"
 	"time"
+
+	"github.com/richgo/flo/pkg/audit"
 )
 
 // Status represents the current state of a task.
@@ -94,15 +96,35 @@ func (t *Task) SetStatus(newStatus Status) error {
 
 	allowed, ok := validTransitions[t.Status]
 	if !ok {
+		audit.Error("task.set_status", "Unknown current status", map[string]interface{}{
+			"task_id":        t.ID,
+			"current_status": string(t.Status),
+			"new_status":     string(newStatus),
+		})
 		return fmt.Errorf("unknown current status: %s", t.Status)
 	}
 
 	if !allowed[newStatus] {
+		audit.Warn("task.set_status", "Invalid status transition", map[string]interface{}{
+			"task_id":    t.ID,
+			"from":       string(t.Status),
+			"to":         string(newStatus),
+			"task_title": t.Title,
+		})
 		return fmt.Errorf("invalid status transition: %s -> %s", t.Status, newStatus)
 	}
 
+	oldStatus := t.Status
 	t.Status = newStatus
 	t.UpdatedAt = time.Now()
+	
+	audit.Info("task.set_status", "Task status changed", map[string]interface{}{
+		"task_id":    t.ID,
+		"task_title": t.Title,
+		"from":       string(oldStatus),
+		"to":         string(newStatus),
+	})
+	
 	return nil
 }
 

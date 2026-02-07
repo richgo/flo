@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/richgo/flo/pkg/audit"
 	"github.com/richgo/flo/pkg/config"
 	"github.com/richgo/flo/pkg/task"
 )
@@ -92,6 +93,18 @@ _Add technical details here._
 		return nil, fmt.Errorf("failed to save task manifest: %w", err)
 	}
 
+	// Initialize audit logger
+	if err := audit.Init(root); err != nil {
+		// Log initialization failure but don't fail workspace init
+		fmt.Fprintf(os.Stderr, "Warning: failed to initialize audit log: %v\n", err)
+	} else {
+		audit.Info("workspace.init", "Workspace initialized", map[string]interface{}{
+			"feature": feature,
+			"backend": backend,
+			"root":    root,
+		})
+	}
+
 	return &Workspace{
 		Root:    root,
 		Feature: feature,
@@ -137,6 +150,18 @@ func Load(root string) (*Workspace, error) {
 		}
 	}
 
+	// Initialize audit logger
+	if err := audit.Init(root); err != nil {
+		// Log initialization failure but don't fail workspace load
+		fmt.Fprintf(os.Stderr, "Warning: failed to initialize audit log: %v\n", err)
+	} else {
+		audit.Info("workspace.load", "Workspace loaded", map[string]interface{}{
+			"feature":    cfg.Feature,
+			"backend":    cfg.Backend,
+			"task_count": len(taskReg.List()),
+		})
+	}
+
 	return &Workspace{
 		Root:    root,
 		Feature: cfg.Feature,
@@ -152,12 +177,22 @@ func (w *Workspace) Save() error {
 	easPath := filepath.Join(w.Root, easDir)
 	
 	if err := w.Config.Save(filepath.Join(easPath, configFile)); err != nil {
+		audit.Error("workspace.save", "Failed to save config", map[string]interface{}{
+			"error": err.Error(),
+		})
 		return fmt.Errorf("failed to save config: %w", err)
 	}
 	
 	if err := w.Tasks.Save(filepath.Join(easPath, tasksDir, manifestFile)); err != nil {
+		audit.Error("workspace.save", "Failed to save tasks", map[string]interface{}{
+			"error": err.Error(),
+		})
 		return fmt.Errorf("failed to save tasks: %w", err)
 	}
+	
+	audit.Info("workspace.save", "Workspace saved", map[string]interface{}{
+		"task_count": len(w.Tasks.List()),
+	})
 	
 	return nil
 }
@@ -176,13 +211,30 @@ func (w *Workspace) CreateTask(title, repo string, deps []string, priority int) 
 
 	if err := w.Tasks.Add(t); err != nil {
 		w.nextID-- // Rollback ID
+		audit.Error("workspace.create_task", "Failed to add task", map[string]interface{}{
+			"task_id": id,
+			"title":   title,
+			"error":   err.Error(),
+		})
 		return nil, err
 	}
 
 	// Auto-save
 	if err := w.Save(); err != nil {
+		audit.Error("workspace.create_task", "Failed to save after task creation", map[string]interface{}{
+			"task_id": id,
+			"error":   err.Error(),
+		})
 		return nil, err
 	}
+
+	audit.Info("workspace.create_task", "Task created", map[string]interface{}{
+		"task_id":  id,
+		"title":    title,
+		"repo":     repo,
+		"deps":     deps,
+		"priority": priority,
+	})
 
 	return t, nil
 }

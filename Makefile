@@ -1,4 +1,10 @@
-.PHONY: all build test lint clean install help
+.PHONY: all build test lint clean install release help
+
+# Version information
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
+DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+LDFLAGS = -ldflags "-X github.com/richgo/flo/cmd/flo/cmd.version=$(VERSION) -X github.com/richgo/flo/cmd/flo/cmd.commit=$(COMMIT) -X github.com/richgo/flo/cmd/flo/cmd.date=$(DATE)"
 
 # Default target
 all: lint test build
@@ -7,7 +13,7 @@ all: lint test build
 build:
 	@echo "Building flo..."
 	@mkdir -p bin
-	@go build -o bin/flo ./cmd/flo
+	@go build $(LDFLAGS) -o bin/flo ./cmd/flo
 	@echo "Build complete: bin/flo"
 
 # Run tests
@@ -29,8 +35,14 @@ clean:
 # Install the binary
 install:
 	@echo "Installing flo..."
-	@go install ./cmd/flo
+	@go install $(LDFLAGS) ./cmd/flo
 	@echo "Install complete"
+
+# Create a release
+release:
+	@echo "Creating release..."
+	@goreleaser release --clean
+	@echo "Release complete"
 
 # Show help
 help:
@@ -41,4 +53,5 @@ help:
 	@echo "  lint     - Run golangci-lint"
 	@echo "  clean    - Remove build artifacts"
 	@echo "  install  - Install flo to GOPATH/bin"
+	@echo "  release  - Create a release with goreleaser"
 	@echo "  help     - Show this help message"

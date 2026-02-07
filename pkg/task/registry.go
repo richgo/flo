@@ -6,6 +6,8 @@ import (
 	"os"
 	"sync"
 	"syscall"
+
+	"github.com/richgo/flo/pkg/audit"
 )
 
 // Registry manages a collection of tasks with dependency tracking.
@@ -26,6 +28,10 @@ func NewRegistry() *Registry {
 // Returns error if task ID exists, validation fails, or deps are invalid.
 func (r *Registry) Add(task *Task) error {
 	if err := task.Validate(); err != nil {
+		audit.Error("task.registry.add", "Task validation failed", map[string]interface{}{
+			"task_id": task.ID,
+			"error":   err.Error(),
+		})
 		return fmt.Errorf("invalid task: %w", err)
 	}
 
@@ -33,14 +39,26 @@ func (r *Registry) Add(task *Task) error {
 	defer r.mu.Unlock()
 
 	if _, exists := r.tasks[task.ID]; exists {
+		audit.Warn("task.registry.add", "Task already exists", map[string]interface{}{
+			"task_id": task.ID,
+		})
 		return fmt.Errorf("task with ID '%s' already exists", task.ID)
 	}
 
 	if err := r.validateDepsLocked(task); err != nil {
+		audit.Error("task.registry.add", "Dependency validation failed", map[string]interface{}{
+			"task_id": task.ID,
+			"deps":    task.Deps,
+			"error":   err.Error(),
+		})
 		return err
 	}
 
 	r.tasks[task.ID] = task
+	audit.Info("task.registry.add", "Task added to registry", map[string]interface{}{
+		"task_id": task.ID,
+		"title":   task.Title,
+	})
 	return nil
 }
 
@@ -59,6 +77,10 @@ func (r *Registry) Get(id string) (*Task, error) {
 // Update updates an existing task.
 func (r *Registry) Update(task *Task) error {
 	if err := task.Validate(); err != nil {
+		audit.Error("task.registry.update", "Task validation failed", map[string]interface{}{
+			"task_id": task.ID,
+			"error":   err.Error(),
+		})
 		return fmt.Errorf("invalid task: %w", err)
 	}
 
@@ -66,19 +88,34 @@ func (r *Registry) Update(task *Task) error {
 	defer r.mu.Unlock()
 
 	if _, exists := r.tasks[task.ID]; !exists {
+		audit.Error("task.registry.update", "Task not found", map[string]interface{}{
+			"task_id": task.ID,
+		})
 		return fmt.Errorf("task '%s' not found", task.ID)
 	}
 
 	if err := r.validateDepsLocked(task); err != nil {
+		audit.Error("task.registry.update", "Dependency validation failed", map[string]interface{}{
+			"task_id": task.ID,
+			"error":   err.Error(),
+		})
 		return err
 	}
 
 	// Check for circular dependencies
 	if err := r.checkCircularLocked(task.ID, task.Deps, make(map[string]bool)); err != nil {
+		audit.Error("task.registry.update", "Circular dependency detected", map[string]interface{}{
+			"task_id": task.ID,
+			"error":   err.Error(),
+		})
 		return err
 	}
 
 	r.tasks[task.ID] = task
+	audit.Info("task.registry.update", "Task updated", map[string]interface{}{
+		"task_id": task.ID,
+		"title":   task.Title,
+	})
 	return nil
 }
 
@@ -89,6 +126,9 @@ func (r *Registry) Delete(id string) error {
 	defer r.mu.Unlock()
 
 	if _, exists := r.tasks[id]; !exists {
+		audit.Error("task.registry.delete", "Task not found", map[string]interface{}{
+			"task_id": id,
+		})
 		return fmt.Errorf("task '%s' not found", id)
 	}
 
@@ -96,12 +136,19 @@ func (r *Registry) Delete(id string) error {
 	for _, task := range r.tasks {
 		for _, dep := range task.Deps {
 			if dep == id {
+				audit.Warn("task.registry.delete", "Cannot delete task with dependents", map[string]interface{}{
+					"task_id":   id,
+					"dependent": task.ID,
+				})
 				return fmt.Errorf("cannot delete task '%s': task '%s' depends on it", id, task.ID)
 			}
 		}
 	}
 
 	delete(r.tasks, id)
+	audit.Info("task.registry.delete", "Task deleted", map[string]interface{}{
+		"task_id": id,
+	})
 	return nil
 }
 
