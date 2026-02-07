@@ -8,7 +8,7 @@ AI-powered spec-driven, test-driven development for individuals, teams & paralle
 
 ## Overview
 
-EAS orchestrates AI agents for structured development workflows:
+Flo orchestrates AI agents for structured development workflows:
 - **Spec-Driven**: Start with SPEC.md, break into tasks
 - **Test-Driven**: Agents must pass tests before completing tasks
 - **Multi-Backend**: Claude Code or GitHub Copilot SDK
@@ -79,12 +79,12 @@ EAS exposes these tools to agents:
 
 | Tool | Description |
 |------|-------------|
-| `eas_task_list` | List tasks with filters |
-| `eas_task_get` | Get task details |
-| `eas_task_claim` | Claim a task |
-| `eas_task_complete` | Complete task (runs tests) |
-| `eas_run_tests` | Run tests for task |
-| `eas_spec_read` | Read SPEC.md |
+| `flo_task_list` | List tasks with filters |
+| `flo_task_get` | Get task details |
+| `flo_task_claim` | Claim a task |
+| `flo_task_complete` | Complete task (runs tests) |
+| `flo_run_tests` | Run tests for task |
+| `flo_spec_read` | Read SPEC.md |
 
 ## Development
 
