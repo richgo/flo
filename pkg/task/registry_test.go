@@ -1,8 +1,10 @@
 package task
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -350,5 +352,149 @@ func TestRegistrySaveLoad(t *testing.T) {
 	task2, _ := reg2.Get("ua-002")
 	if len(task2.Deps) != 1 || task2.Deps[0] != "ua-001" {
 		t.Error("deps not preserved after load")
+	}
+}
+
+func TestRegistryConcurrentReads(t *testing.T) {
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "tasks.json")
+
+	// Create and save initial registry
+	reg := NewRegistry()
+	for i := 0; i < 10; i++ {
+		task := New(fmt.Sprintf("ua-%03d", i), fmt.Sprintf("Task %d", i))
+		reg.Add(task)
+	}
+	if err := reg.Save(filePath); err != nil {
+		t.Fatalf("failed to save: %v", err)
+	}
+
+	// Perform concurrent reads
+	const numReaders = 10
+	done := make(chan bool, numReaders)
+	errors := make(chan error, numReaders)
+
+	for i := 0; i < numReaders; i++ {
+		go func() {
+			regReader := NewRegistry()
+			if err := regReader.Load(filePath); err != nil {
+				errors <- err
+				done <- false
+				return
+			}
+			if len(regReader.List()) != 10 {
+				errors <- fmt.Errorf("expected 10 tasks, got %d", len(regReader.List()))
+				done <- false
+				return
+			}
+			done <- true
+		}()
+	}
+
+	// Wait for all readers
+	for i := 0; i < numReaders; i++ {
+		<-done
+	}
+
+	close(errors)
+	for err := range errors {
+		t.Errorf("concurrent read error: %v", err)
+	}
+}
+
+func TestRegistryConcurrentWrites(t *testing.T) {
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "tasks.json")
+
+	// Create initial empty registry
+	reg := NewRegistry()
+	if err := reg.Save(filePath); err != nil {
+		t.Fatalf("failed to create initial file: %v", err)
+	}
+
+	// Perform sequential writes from different registry instances
+	// This simulates separate processes writing to the same file
+	const numWrites = 5
+	errors := make(chan error, numWrites)
+
+	for i := 0; i < numWrites; i++ {
+		taskID := fmt.Sprintf("ua-%03d", i)
+		
+		// Load fresh registry
+		regWriter := NewRegistry()
+		if err := regWriter.Load(filePath); err != nil {
+			errors <- fmt.Errorf("write %d load failed: %w", i, err)
+			continue
+		}
+
+		// Add task
+		task := New(taskID, fmt.Sprintf("Task %d", i))
+		if err := regWriter.Add(task); err != nil {
+			errors <- fmt.Errorf("write %d add failed: %w", i, err)
+			continue
+		}
+
+		// Save
+		if err := regWriter.Save(filePath); err != nil {
+			errors <- fmt.Errorf("write %d save failed: %w", i, err)
+			continue
+		}
+	}
+
+	close(errors)
+	for err := range errors {
+		t.Errorf("concurrent write error: %v", err)
+	}
+
+	// Verify final state
+	finalReg := NewRegistry()
+	if err := finalReg.Load(filePath); err != nil {
+		t.Fatalf("failed to load final state: %v", err)
+	}
+
+	if len(finalReg.List()) != numWrites {
+		t.Errorf("expected %d tasks in final state, got %d", numWrites, len(finalReg.List()))
+	}
+}
+
+func TestRegistryVersionConflict(t *testing.T) {
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "tasks.json")
+
+	// Create initial registry
+	reg1 := NewRegistry()
+	task1 := New("ua-001", "First")
+	reg1.Add(task1)
+	if err := reg1.Save(filePath); err != nil {
+		t.Fatalf("failed to save reg1: %v", err)
+	}
+
+	// Load into two separate registries
+	reg2 := NewRegistry()
+	if err := reg2.Load(filePath); err != nil {
+		t.Fatalf("failed to load reg2: %v", err)
+	}
+
+	reg3 := NewRegistry()
+	if err := reg3.Load(filePath); err != nil {
+		t.Fatalf("failed to load reg3: %v", err)
+	}
+
+	// reg2 adds a task and saves successfully
+	task2 := New("ua-002", "Second")
+	reg2.Add(task2)
+	if err := reg2.Save(filePath); err != nil {
+		t.Fatalf("reg2 save should succeed: %v", err)
+	}
+
+	// reg3 tries to save - should fail with version conflict
+	task3 := New("ua-003", "Third")
+	reg3.Add(task3)
+	err := reg3.Save(filePath)
+	if err == nil {
+		t.Error("expected version conflict error for reg3 save")
+	}
+	if err != nil && !strings.Contains(err.Error(), "version conflict") {
+		t.Errorf("expected version conflict error, got: %v", err)
 	}
 }

@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"syscall"
 )
 
 // Registry manages a collection of tasks with dependency tracking.
 type Registry struct {
-	tasks map[string]*Task
-	mu    sync.RWMutex
+	tasks   map[string]*Task
+	mu      sync.RWMutex
+	version int // Optimistic concurrency control version
 }
 
 // NewRegistry creates an empty task registry.
@@ -253,16 +255,64 @@ func (r *Registry) checkCircularLocked(startID string, deps []string, visited ma
 
 // registryData is the JSON structure for persistence.
 type registryData struct {
-	Tasks []*Task `json:"tasks"`
+	Version int     `json:"version"`
+	Tasks   []*Task `json:"tasks"`
 }
 
-// Save writes the registry to a JSON file.
+// lockFile acquires an exclusive lock on a file.
+func lockFile(file *os.File) error {
+	return syscall.Flock(int(file.Fd()), syscall.LOCK_EX)
+}
+
+// unlockFile releases a file lock.
+func unlockFile(file *os.File) error {
+	return syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+}
+
+// Save writes the registry to a JSON file with file locking and optimistic concurrency.
 func (r *Registry) Save(path string) error {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	// Open file for read-write, create if doesn't exist
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open: %w", err)
+	}
+	defer file.Close()
+
+	// Acquire exclusive lock
+	if err := lockFile(file); err != nil {
+		return fmt.Errorf("failed to lock file: %w", err)
+	}
+	defer unlockFile(file)
+
+	// Read current version for optimistic concurrency check
+	stat, err := file.Stat()
+	if err != nil {
+		return fmt.Errorf("failed to stat: %w", err)
+	}
+
+	if stat.Size() > 0 {
+		// File exists, check version
+		var currentData registryData
+		decoder := json.NewDecoder(file)
+		if err := decoder.Decode(&currentData); err != nil {
+			return fmt.Errorf("failed to read current version: %w", err)
+		}
+
+		// Version conflict check
+		if currentData.Version != r.version {
+			return fmt.Errorf("version conflict: expected %d, found %d", r.version, currentData.Version)
+		}
+	}
+
+	// Increment version for this save
+	r.version++
 
 	data := registryData{
-		Tasks: make([]*Task, 0, len(r.tasks)),
+		Version: r.version,
+		Tasks:   make([]*Task, 0, len(r.tasks)),
 	}
 	for _, task := range r.tasks {
 		data.Tasks = append(data.Tasks, task)
@@ -273,22 +323,38 @@ func (r *Registry) Save(path string) error {
 		return fmt.Errorf("failed to marshal: %w", err)
 	}
 
-	if err := os.WriteFile(path, jsonData, 0644); err != nil {
+	// Truncate and write from beginning
+	if err := file.Truncate(0); err != nil {
+		return fmt.Errorf("failed to truncate: %w", err)
+	}
+	if _, err := file.Seek(0, 0); err != nil {
+		return fmt.Errorf("failed to seek: %w", err)
+	}
+	if _, err := file.Write(jsonData); err != nil {
 		return fmt.Errorf("failed to write: %w", err)
 	}
 
 	return nil
 }
 
-// Load reads the registry from a JSON file.
+// Load reads the registry from a JSON file with file locking.
 func (r *Registry) Load(path string) error {
-	jsonData, err := os.ReadFile(path)
+	// Open file for reading
+	file, err := os.Open(path)
 	if err != nil {
 		return fmt.Errorf("failed to read: %w", err)
 	}
+	defer file.Close()
+
+	// Acquire shared lock for reading
+	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_SH); err != nil {
+		return fmt.Errorf("failed to lock file: %w", err)
+	}
+	defer syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
 
 	var data registryData
-	if err := json.Unmarshal(jsonData, &data); err != nil {
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&data); err != nil {
 		return fmt.Errorf("failed to unmarshal: %w", err)
 	}
 
@@ -297,7 +363,8 @@ func (r *Registry) Load(path string) error {
 
 	// Clear existing and add all tasks
 	r.tasks = make(map[string]*Task)
-	
+	r.version = data.Version
+
 	// First pass: add all tasks without dep validation
 	for _, task := range data.Tasks {
 		if err := task.Validate(); err != nil {
